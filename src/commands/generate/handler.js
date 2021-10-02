@@ -370,6 +370,12 @@ class Handler {
             }
             const parser = new xml2js.Parser({ explicitArray: false, mergeAttrs: true });
             const pomJson = await parser.parseStringPromise(pomRequestResponse.data);
+            if(!pomJson.project.dependencies) {
+                return accum;
+            }
+            if (!Array.isArray(pomJson.project.dependencies.dependency)) {
+                pomJson.project.dependencies.dependency = [pomJson.project.dependencies.dependency]
+            }
             pomJson.project.dependencies.dependency.reduce((deps, item, index) => {
                 if (groups.filter(g => g.artifactId === item.artifactId).lenght > 0){
                     if (groups.filter(g=> g.artifactId === item.artifactId && g.version !== item.version).length > 0) {
