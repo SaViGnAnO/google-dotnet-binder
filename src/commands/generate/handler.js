@@ -376,10 +376,12 @@ class Handler {
             if (!Array.isArray(pomJson.project.dependencies.dependency)) {
                 pomJson.project.dependencies.dependency = [pomJson.project.dependencies.dependency]
             }
+            const project = `${pomJson.project.groupId} - ${pomJson.project.artifactId}`;
             pomJson.project.dependencies.dependency.reduce((deps, item, index) => {
-                if (groups.filter(g => g.artifactId === item.artifactId).lenght > 0){
-                    if (groups.filter(g=> g.artifactId === item.artifactId && g.version !== item.version).length > 0) {
-                        console.log('We have the artifact but not the right version hmmm.');
+                const existingItemArray = groups.filter(g => g.groupId === item.groupId && g.artifactId === item.artifactId);
+                if (existingItemArray.length > 0){
+                    if (existingItemArray[0].version !== item.version.replace("[", "").replace("]", "")) {
+                        console.log(`For ${project} we already have the dependency ${item.groupId} - ${item.artifactId} but not the right version ${item.version.replace("[", "").replace("]", "")} instead of ${existingItemArray[0].version}.`);
                     }
                     return deps;
                 }
@@ -391,7 +393,7 @@ class Handler {
                     groupId: item.groupId,
                     artifactId: item.artifactId,
                     version: item.version,
-                    nugetVersion: item.version,
+                    nugetVersion: item.version.replace("[", "").replace("]", ""),
                     nugetId: `savi.${item.groupId}.${item.artifactId}`,
                     dependencyOnly: true
                 });
