@@ -184,7 +184,7 @@ class Handler {
             const {
                 stdout,
                 stderr
-            } = await exec(`xamarin-android-binderator --config="${options.bindings}" --basepath="${__dirname}\\output"`);
+            } = await exec(`xamarin-android-binderator --config="${options.bindings}" --basepath="${__dirname}/../../../"`);
             if (stdout) {
                 console.log(stdout);
             }
@@ -200,6 +200,8 @@ class Handler {
             stdout,
             stderr
         } = await exec(`dotnet tool install -g xamarin.androidbinderator.tool`);
+
+        if (stdout) {
             console.log(stdout);
         }
 
