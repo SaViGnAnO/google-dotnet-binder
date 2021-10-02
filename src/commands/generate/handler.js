@@ -190,6 +190,9 @@ class Handler {
             pageSize: 10,
             searchable: true,
             highlight: true,
+            validate: function(input) {
+                return input.length > 0;
+            },
             source: choiceSource
         };
         return await inquirer.prompt([projectQuestion]);
@@ -214,56 +217,55 @@ class Handler {
         })();
     }
 
-    async GetGroupIndex (groupIds = undefined) {
-            const masterIndex = groupIds || await this.GetMasterIndex;
-            let groupIndex = [];
+    async GetGroupIndex (groupIds) {
+        let groupIndex = [];
 
-            function convertVersionsToArray(value, name) {
-                if (typeof value === 'string' && name === 'versions') {
-                    if (value.includes(',')){
-                        value = value.split(',').reverse();
-                    }
+        function convertVersionsToArray(value, name) {
+            if (typeof value === 'string' && name === 'versions') {
+                if (value.includes(',')){
+                    value = value.split(',').reverse();
                 }
-                return value;
             }
+            return value;
+        }
         
-            for (const groupId in masterIndex) {
-                const url = `${BASE_URL}/${masterIndex[groupId].replace(/\./g, '/')}/group-index.xml`;
-                const config = {
-                    method: 'get',
-                    url,
-                    headers: {
-                        'Content-Type': 'application/xml',
-                    },
-                };
+        for (const groupId in groupIds) {
+            const url = `${BASE_URL}/${groupIds[groupId].replace(/\./g, '/')}/group-index.xml`;
+            const config = {
+                method: 'get',
+                url,
+                headers: {
+                    'Content-Type': 'application/xml',
+                },
+            };
+        
+            const parser = new xml2js.Parser({ explicitArray: false, mergeAttrs: true, attrValueProcessors: [convertVersionsToArray] });
+            const response = await axios(config);
+
+            var groupdata = await parser.parseStringPromise(response.data);
+            Object.keys(groupdata).reduce((result, key, _index) => {
+                Object.keys(groupdata[key]).map((key2, _index2) => {
+                    var versionNum = groupdata[key][key2].versions[0];
             
-                const parser = new xml2js.Parser({ explicitArray: false, mergeAttrs: true, attrValueProcessors: [convertVersionsToArray] });
-                const response = await axios(config);
-
-                var groupdata = await parser.parseStringPromise(response.data);
-                Object.keys(groupdata).reduce((result, key, _index) => {
-                    Object.keys(groupdata[key]).map((key2, _index2) => {
-                        var versionNum = groupdata[key][key2].versions[0];
-                
-                        result.push({
-                            groupId: masterIndex[groupId],
-                            artifactId: key2,
-                            version: versionNum,
-                            nugetVersion: versionNum,
-                            nugetId: `savi.${masterIndex[groupId]}.${key}`,
-                            dependencyOnly: false
-                        });
+                    result.push({
+                        groupId: groupIds[groupId],
+                        artifactId: key2,
+                        version: versionNum,
+                        nugetVersion: versionNum,
+                        nugetId: `savi.${groupIds[groupId]}.${key}`,
+                        dependencyOnly: false
                     });
-                    return result;
-                    
-                }, groupIndex);
-            }
+                });
+                return result;
+                
+            }, groupIndex);
+        }
 
-            function VersionSplit(value, _name) {
-                return value.split(',').reverse();
-            }
+        function VersionSplit(value, _name) {
+            return value.split(',').reverse();
+        }
 
-            return groupIndex;
+        return groupIndex;
     }
 
     
