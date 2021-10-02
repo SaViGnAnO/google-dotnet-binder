@@ -21,6 +21,19 @@ class Handler {
 
         if (options.bindingconfig) {
             const groups = await this.askForMavenPackages();
+            if (!groups || groups.groupIds.length < 1) {
+                const downloadAll = await inquirer.prompt([{
+                    type: 'confirm',
+                    message: 'Do you want to download ALL? This could be a minute or 42.',
+                    name: 'toBeDumb',
+                    default: false
+                }]);
+
+                if (!downloadAll.toBeDumb) {
+                    return this.handle(options);
+                }
+            }
+
             let configObject = [{
                 mavenRepositoryType: "Google",
                 slnFile: "generated/AndroidX.sln",
@@ -213,9 +226,6 @@ class Handler {
             pageSize: 10,
             searchable: true,
             highlight: true,
-            validate: function(input) {
-                return input.length > 0;
-            },
             source: choiceSource
         };
         return await inquirer.prompt([projectQuestion]);
