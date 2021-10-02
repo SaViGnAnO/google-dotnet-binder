@@ -224,13 +224,15 @@ class Handler {
             if (typeof value === 'string' && name === 'versions') {
                 if (value.includes(',')){
                     value = value.split(',').reverse();
+                } else {
+                    value = [value]
                 }
             }
             return value;
         }
         
         for (const groupId in groupIds) {
-            const url = `${BASE_URL}/${groupIds[groupId].replace(/\./g, '/')}/group-index.xml`;
+            const url = `${BASE_URL}${groupIds[groupId].replace(/\./g, '/')}/group-index.xml`;
             const config = {
                 method: 'get',
                 url,
@@ -242,24 +244,37 @@ class Handler {
             const parser = new xml2js.Parser({ explicitArray: false, mergeAttrs: true, attrValueProcessors: [convertVersionsToArray] });
             const response = await axios(config);
 
+
             var groupdata = await parser.parseStringPromise(response.data);
-            Object.keys(groupdata).reduce((result, key, _index) => {
-                Object.keys(groupdata[key]).map((key2, _index2) => {
-                    var versionNum = groupdata[key][key2].versions[0];
-            
+            await Promise.resolve(
+                Object.keys(groupdata).reduce(async (result, key, _index) => {
+                await Promise.all(Object.keys(groupdata[key]).map(async (key2, _index2) => {
+                    const versionNum = groupdata[key][key2].versions[0];
+                    const artifactMedataUrl = `${BASE_URL}${groupIds[groupId].replace(/\./g, '/')}/${key2}/${versionNum}/artifact-metadata.json`
+                    const artifactRequestConfig = {
+                        method: 'get',
+                        url: artifactMedataUrl,
+                        responseType: 'json',
+                    };
+                    const artifactMetadataResponse = await axios(artifactRequestConfig);
+                    const artifactMetadata = artifactMetadataResponse.data.artifacts;
                     result.push({
                         groupId: groupIds[groupId],
                         artifactId: key2,
                         version: versionNum,
                         nugetVersion: versionNum,
                         nugetId: `savi.${groupIds[groupId]}.${key}`,
-                        dependencyOnly: false
+                        dependencyOnly: false,
+                        downloadJavaSourceJars: artifactMetadata.filter(am => am.name.includes('-sources.jar')).length > 0,
+                        downloadPoms: artifactMetadata.filter(am => am.name.includes('.pom')).length > 0,
+                        downloadJavaDocJars: artifactMetadata.filter(am => am.name.includes('javadoc.jar')).length > 0,
+                        downloadMetadataFiles: artifactMetadata.filter(am => am.name.includes('-metadata.jar')).length > 0
                     });
-                });
+                }));
                 return result;
                 
-            }, groupIndex);
-        }
+            }, groupIndex));
+            
 
         function VersionSplit(value, _name) {
             return value.split(',').reverse();
@@ -267,10 +282,7 @@ class Handler {
 
         return groupIndex;
     }
-
-    
 }
-
-
+}
 
 module.exports = new Handler();
