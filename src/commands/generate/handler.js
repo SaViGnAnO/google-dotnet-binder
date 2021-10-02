@@ -288,20 +288,36 @@ class Handler {
                         method: 'get',
                         url: artifactMedataUrl,
                         responseType: 'json',
+                        validateStatus() {
+                            return true;
+                        }
                     };
                     const artifactMetadataResponse = await axios(artifactRequestConfig);
-                    const artifactMetadata = artifactMetadataResponse.data.artifacts;
+                    const artifactMetadata = artifactMetadataResponse.data.artifacts || [];
+
+                    // Prevent 404 errors in savi-binderator tool
+                    const downloadJavaSourceJars =  artifactMetadata.filter(am => am.name.includes('-sources.jar')).length > 0;
+                    const downloadPoms = artifactMetadata.filter(am => am.name.includes('.pom')).length > 0;
+                    const downloadJavaDocJars =  artifactMetadata.filter(am => am.name.includes('javadoc.jar')).length > 0;
+                    const downloadMetadataFiles = artifactMetadata.filter(am => am.name.includes('-metadata.jar')).length > 0;
+
+                    // xamarin binderator attempts to download these 2 files regardless of packaging unless it's flagged as a dependency.
+                    const dependencyOnly = !(artifactMetadata.filter(am =>
+                                am.name.includes(`${key2}-${versionNum}.jar`) ||
+                                am.name.includes(`${key2}-${versionNum}.aar`)
+                            ).length > 0);
+
                     result.push({
                         groupId: groupIds[groupId],
                         artifactId: key2,
                         version: versionNum,
                         nugetVersion: versionNum,
                         nugetId: `savi.${groupIds[groupId]}.${key}`,
-                        dependencyOnly: false,
-                        downloadJavaSourceJars: artifactMetadata.filter(am => am.name.includes('-sources.jar')).length > 0,
-                        downloadPoms: artifactMetadata.filter(am => am.name.includes('.pom')).length > 0,
-                        downloadJavaDocJars: artifactMetadata.filter(am => am.name.includes('javadoc.jar')).length > 0,
-                        downloadMetadataFiles: artifactMetadata.filter(am => am.name.includes('-metadata.jar')).length > 0
+                        dependencyOnly,
+                        downloadJavaSourceJars,
+                        downloadPoms,
+                        downloadJavaDocJars,
+                        downloadMetadataFiles
                     });
                 }));
                 return result;
