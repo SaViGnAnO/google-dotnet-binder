@@ -3,6 +3,9 @@ const fuzzy = require('fuzzy');
 const axios = require('axios');
 const xml2js = require('xml2js');
 const fs = require('fs');
+const child_process = require('child_process');
+const util = require('util');
+const exec = util.promisify(child_process.exec);
 
 const BASE_URL = 'https://dl.google.com/android/maven2/';
 
@@ -16,9 +19,8 @@ class Handler {
             throw new Error('default not implemented');
         }
 
-        const groups = await this.askForMavenPackages();
         if (options.bindingconfig) {
-            //TODO: add selection option here
+            const groups = await this.askForMavenPackages();
             let configObject = [{
                 mavenRepositoryType: "Google",
                 slnFile: "generated/AndroidX.sln",
@@ -159,9 +161,30 @@ class Handler {
         }
 
         if (options.bindings) {
-            
+            //await this.InstallDotnetTool();
+            //RunProcess("xamarin-android-binderator", $"--config=\"{configFile}\" --basepath=\"{basePath}\"");
+            const {stdout, stderr} = await exec(`xamarin-android-binderator --config="${options.bindings}" --basepath="./output"`);
+            if (stdout) {
+                console.log(stdout);
+            }
+
+            if (stderr) {
+                console.log(stderr);
+            }
         }
     }
+
+    async InstallDotnetTool() {
+        const {stdout, stderr} = await exec(`dotnet tool install -g xamarin.androidbinderator.tool`);
+        if (stdout) {
+            console.log(stdout);
+        }
+
+        if (stderr) {
+            console.log(stderr);
+        }
+    }
+
     async askForMavenPackages() {
         const choices = (await this.GetMasterIndex).reduce((result, item, index) => {
             result.push({name: item, value: item});
@@ -225,7 +248,7 @@ class Handler {
                 if (value.includes(',')){
                     value = value.split(',').reverse();
                 } else {
-                    value = [value]
+                    value = [value];
                 }
             }
             return value;
