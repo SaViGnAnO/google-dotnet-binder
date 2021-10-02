@@ -15,8 +15,8 @@ class Handler {
         if (!options) {
             throw new Error('default not implemented');
         }
-        const groupIndex = await this.GetGroupIndex;
 
+        const groups = await this.askForMavenPackages();
         if (options.bindingconfig) {
             //TODO: add selection option here
             let configObject = [{
@@ -151,7 +151,7 @@ class Handler {
                 ]
             }];
 
-            const groupIndex = await this.GetGroupIndex();
+            const groupIndex = await this.GetGroupIndex(groups.groupIds);
 
             configObject[0].artifacts.push(...groupIndex);
 
@@ -161,6 +161,38 @@ class Handler {
         if (options.bindings) {
             
         }
+    }
+    async askForMavenPackages() {
+        const choices = (await this.GetMasterIndex).reduce((result, item, index) => {
+            result.push({name: item, value: item});
+            return result;
+        }, []);
+
+        const choiceSource = async (currentAnswers, input) => {
+            input = input || '';
+
+            var fuzzyResult = fuzzy.filter(input, choices, {
+                extract: function(item) {
+                    return item['name'];
+                }
+            });
+
+            var data = fuzzyResult.map(function(element) {
+                return element.original;
+            });
+
+            return data;
+        };
+        const projectQuestion = {
+            type: 'checkbox-plus',
+            name: 'groupIds',
+            message: 'Packages you wish to generate bindings for:',
+            pageSize: 10,
+            searchable: true,
+            highlight: true,
+            source: choiceSource
+        };
+        return await inquirer.prompt([projectQuestion]);
     }
 
     get GetMasterIndex() {
