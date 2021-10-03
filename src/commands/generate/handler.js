@@ -2,6 +2,7 @@ const inquirer = require('inquirer');
 const fuzzy = require('fuzzy');
 const axios = require('axios');
 const xml2js = require('xml2js');
+const fs = require('fs');
 const path = require('path');
 const child_process = require('child_process');
 const util = require('util');
@@ -51,6 +52,16 @@ class Handler {
         if (options.bindings) {
             //await this.InstallDotnetTool();
             //RunProcess("xamarin-android-binderator", $"--config=\"{configFile}\" --basepath=\"{basePath}\"");
+            if (!fs.existsSync(path.join(options.bindings))) {
+                console.error('The config file you passed cannot be found.')
+                console.log('Consider running `gnetbinder -c` to generate a configuration file.');
+                return;
+            }
+            if (!fs.existsSync(path.join(process.cwd(), 'source'))) {
+                console.error('No source directory found.')
+                console.log('Consider running `gnetbinder --sources` to generate a configuration file.');
+
+            }
             const {
                 stdout,
                 stderr
