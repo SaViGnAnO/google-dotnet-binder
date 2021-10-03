@@ -391,21 +391,14 @@ class Handler {
             }
             const project = `${pomJson.project.groupId} - ${pomJson.project.artifactId}`;
             pomJson.project.dependencies.dependency.reduce((deps, item, index) => {
-                const existingItemArray = groups.filter(g => g.groupId === item.groupId && g.artifactId === item.artifactId);
-                if (existingItemArray.length > 0){
-                    if (existingItemArray[0].version !== item.version.replace("[", "").replace("]", "")) {
-                        console.log(`For ${project} we already have the dependency ${item.groupId} - ${item.artifactId} but not the right version ${item.version.replace("[", "").replace("]", "")} instead of ${existingItemArray[0].version}.`);
-                    }
-                    return deps;
-                }
                 // Ensure it's not already in our list
-                if (deps.filter(d => d.groupId === item.groupId && d.artifactId === item.artifactId).length > 0){
+                if (deps.filter(d => d.groupId === item.groupId && d.artifactId === item.artifactId && d.version === item.version).length > 0){
                     return deps;
                 }
                 deps.push({
                     groupId: item.groupId,
                     artifactId: item.artifactId,
-                    version: item.version,
+                    version: item.version.replace("[", "").replace("]", ""),
                     nugetVersion: item.version.replace("[", "").replace("]", ""),
                     nugetId: `savi.${item.groupId}.${item.artifactId}`,
                     dependencyOnly: true
