@@ -184,7 +184,10 @@ class Handler {
             const {
                 stdout,
                 stderr
-            } = await exec(`xamarin-android-binderator --config="${options.bindings}" --basepath="C:\\testoutput"`);
+            } = await exec(`xamarin-android-binderator --config="${options.bindings}" --basepath="${__dirname}/../../../output"`);
+            
+            console.log(`[DIRECTORY] process.cwd(): ${process.cwd()}\n[DIRECTORY] __dirname: ${__dirname}`);
+
             if (stdout) {
                 console.log(stdout);
             }
