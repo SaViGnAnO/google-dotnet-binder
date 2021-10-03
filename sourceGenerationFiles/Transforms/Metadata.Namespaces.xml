@@ -1,0 +1,7 @@
+﻿<metadata>
+	<!-- Rename Namespaces -->
+	<!-- <attr path="/api/package[@name='com.google.firebase']" name="managedName">Firebase</attr>
+	<attr path="/api/package[@name='com.google.firebase.abt']" name="managedName">Firebase.Abt</attr>
+    <attr path="/api/package[@name='com.google.firebase.abt.component']" name="managedName">Firebase.Abt.Component</attr>
+    <attr path="/api/package[@name='developers.mobile.abt']" name="managedName">Developers.Mobile.Abt</attr> -->
+</metadata>

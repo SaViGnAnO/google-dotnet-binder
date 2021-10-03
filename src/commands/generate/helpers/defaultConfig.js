@@ -5,8 +5,8 @@ module.exports = {
             slnFile: "generated/AndroidX.sln",
             strictRuntimeDependencies: true,
             additionalProjects: [
-                "source/migration/Dummy/Xamarin.AndroidX.Migration.Dummy.csproj",
-                "source/androidx.appcompat/typeforwarders/androidx.appcompat.appcompat-resources-typeforwarders.csproj"
+                // "source/migration/Dummy/Xamarin.AndroidX.Migration.Dummy.csproj",
+                // "source/androidx.appcompat/typeforwarders/androidx.appcompat.appcompat-resources-typeforwarders.csproj"
             ],
             templates: [
                 {
