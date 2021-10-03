@@ -184,7 +184,7 @@ class Handler {
             const {
                 stdout,
                 stderr
-            } = await exec(`xamarin-android-binderator --config="${options.bindings}" --basepath="${__dirname}/../../../"`);
+            } = await exec(`xamarin-android-binderator --config="${options.bindings}" --basepath="C:\\testoutput"`);
             if (stdout) {
                 console.log(stdout);
             }
@@ -269,14 +269,15 @@ class Handler {
         let groupIndex = [];
 
         function convertVersionsToArray(value, name) {
+            var array = [];
             if (typeof value === 'string' && name === 'versions') {
                 if (value.includes(',')) {
-                    value = value.split(',').reverse();
+                    array = value.split(',').reverse();
                 } else {
-                    value = [value];
+                    array.push(value);
                 }
             }
-            return value;
+            return array;
         }
 
         for (const groupId in groupIds) {
