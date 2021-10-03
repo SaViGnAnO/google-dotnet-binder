@@ -184,7 +184,7 @@ class Handler {
             const {
                 stdout,
                 stderr
-            } = await exec(`xamarin-android-binderator --config="${options.bindings}" --basepath="C:\\testoutput"`);
+            } = await exec(`xamarin-android-binderator --config="${options.bindings}" --basepath="${__dirname}/../../../output"`);
             if (stdout) {
                 console.log(stdout);
             }
@@ -389,25 +389,24 @@ class Handler {
             if (!Array.isArray(pomJson.project.dependencies.dependency)) {
                 pomJson.project.dependencies.dependency = [pomJson.project.dependencies.dependency]
             }
-            const project = `${pomJson.project.groupId} - ${pomJson.project.artifactId}`;
-            pomJson.project.dependencies.dependency.reduce((deps, item, index) => {
-                const existingItemArray = groups.filter(g => g.groupId === item.groupId && g.artifactId === item.artifactId);
+            pomJson.project.dependencies.dependency.reduce((deps, pomItem, index) => {
+                const version = pomItem.version.replace("[", "").replace("]", "");
+                const existingItemArray = groups.filter(g => g.groupId === pomItem.groupId && g.artifactId === pomItem.artifactId);
                 if (existingItemArray.length > 0){
-                    if (existingItemArray[0].version !== item.version.replace("[", "").replace("]", "")) {
-                        console.log(`For ${project} we already have the dependency ${item.groupId} - ${item.artifactId} but not the right version ${item.version.replace("[", "").replace("]", "")} instead of ${existingItemArray[0].version}.`);
+                    if (existingItemArray[0].version === version) {
+                        return deps;
                     }
-                    return deps;
                 }
                 // Ensure it's not already in our list
-                if (deps.filter(d => d.groupId === item.groupId && d.artifactId === item.artifactId).length > 0){
+                if (deps.filter(d => d.groupId === pomItem.groupId && d.artifactId === pomItem.artifactId && d.version === version).length > 0){
                     return deps;
                 }
                 deps.push({
-                    groupId: item.groupId,
-                    artifactId: item.artifactId,
-                    version: item.version,
-                    nugetVersion: item.version.replace("[", "").replace("]", ""),
-                    nugetId: `savi.${item.groupId}.${item.artifactId}`,
+                    groupId: pomItem.groupId,
+                    artifactId: pomItem.artifactId,
+                    version,
+                    nugetVersion: version,
+                    nugetId: `savi.${pomItem.groupId}.${pomItem.artifactId}`,
                     dependencyOnly: true
                 });
                 return deps;
