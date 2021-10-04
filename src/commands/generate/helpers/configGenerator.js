@@ -90,8 +90,8 @@ class ConfigGenerator {
             groupIndex.push(...missingDepsForConfig);
         }
 
-        defaultConfig[0].artifacts.push(...groupIndex);
-        fs.writeFileSync(path.join(process.cwd(), 'config.json'), JSON.stringify(defaultConfig));
+        defaultConfig.artifacts.push(...groupIndex);
+        fs.writeFileSync(path.join(process.cwd(), 'config.json'), JSON.stringify([defaultConfig]));
     }
     /**
      * 
@@ -125,7 +125,11 @@ class ConfigGenerator {
                 return accum;
             }
             if (!Array.isArray(pomJson.project.dependencies.dependency)) {
-                pomJson.project.dependencies.dependency = [pomJson.project.dependencies.dependency]
+                try {
+                    pomJson.project.dependencies.dependency = [pomJson.project.dependencies.dependency]
+                } catch (e) {
+                    return accum;
+                }
             }
             const project = `${pomJson.project.groupId} - ${pomJson.project.artifactId}`;
             pomJson.project.dependencies.dependency.reduce((deps, item, index) => {

@@ -1,5 +1,5 @@
 module.exports = {
-    defaultConfig: [
+    defaultConfig: Object.assign({},
         {
             mavenRepositoryType: "Google",
             slnFile: "generated/AndroidX.sln",
@@ -140,5 +140,5 @@ module.exports = {
                 }
             ]
         }
-    ]
+    )
 }
