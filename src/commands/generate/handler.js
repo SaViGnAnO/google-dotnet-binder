@@ -59,7 +59,7 @@ class Handler {
             }
             if (!fs.existsSync(path.join(process.cwd(), 'source'))) {
                 console.error('No source directory found.')
-                console.log('Consider running `gnetbinder --sources` to generate a configuration file.');
+                console.log('Consider running `gnetbinder --sources` to generate some default source files.');
 
             }
             const {
